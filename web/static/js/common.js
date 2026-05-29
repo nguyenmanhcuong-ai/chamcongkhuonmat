@@ -1,11 +1,7 @@
 /** Shared utilities — tablet / WebView / APK */
 
 export function isNativeApp() {
-  if (window.Capacitor?.isNativePlatform?.() === true) return true;
-  // Capacitor WebView (http://localhost hoặc https://localhost)
-  if (location.hostname === "localhost" && !location.port) return true;
-  if (location.protocol === "capacitor:") return true;
-  return false;
+  return window.Capacitor?.isNativePlatform?.() === true;
 }
 
 export function getApiBase() {
@@ -23,67 +19,8 @@ export function apiUrl(path) {
   return base ? `${base}${p}` : p;
 }
 
-/** HTTP qua native stack tren APK (WebView fetch hay bi chan HTTP -> IP LAN). */
-function getNativeHttp() {
-  const cap = window.Capacitor;
-  if (!cap || typeof cap.isNativePlatform !== "function" || !cap.isNativePlatform()) {
-    return null;
-  }
-  return cap.Plugins?.CapacitorHttp || null;
-}
-
-function wrapNativeResponse(res) {
-  const headers = res.headers || {};
-  return {
-    ok: res.status >= 200 && res.status < 300,
-    status: res.status,
-    headers: {
-      get(name) {
-        const key = String(name).toLowerCase();
-        for (const [k, v] of Object.entries(headers)) {
-          if (k.toLowerCase() === key) return v;
-        }
-        return "";
-      },
-    },
-    async json() {
-      if (typeof res.data === "string") {
-        try {
-          return JSON.parse(res.data);
-        } catch {
-          return res.data;
-        }
-      }
-      return res.data;
-    },
-    async text() {
-      return typeof res.data === "string" ? res.data : JSON.stringify(res.data);
-    },
-  };
-}
-
-export async function lanFetch(url, options = {}) {
-  const http = getNativeHttp();
-  const method = (options.method || "GET").toUpperCase();
-
-  if (http) {
-    const req = {
-      url,
-      method,
-      connectTimeout: 15000,
-      readTimeout: 15000,
-      headers: { Accept: "application/json", ...(options.headers || {}) },
-    };
-    if (options.body) req.data = options.body;
-    const res = await http.request(req);
-    return wrapNativeResponse(res);
-  }
-
-  return fetch(url, options);
-}
-
 export async function apiFetch(path, options) {
-  return lanFetch(apiUrl(path), options);
+  return fetch(apiUrl(path), options);
 }
 
 export async function ensureApiConfigured() {
