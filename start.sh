@@ -1,5 +1,7 @@
 #!/bin/sh
 set -e
+cd "$(dirname "$0")"
+export PYTHONPATH="${PYTHONPATH:-/app}:$(pwd)"
 echo "=== Preload model ==="
 python scripts/preload_model.py
 echo "=== Start server ==="

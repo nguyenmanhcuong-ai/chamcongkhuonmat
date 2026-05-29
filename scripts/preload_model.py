@@ -1,5 +1,11 @@
 import os
 import sys
+from pathlib import Path
+
+# /app phải có trong path khi chạy từ scripts/
+_ROOT = Path(__file__).resolve().parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 import config
 

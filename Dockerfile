@@ -1,6 +1,7 @@
 FROM python:3.10-slim
 
 ENV PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
     MODEL_NAME=buffalo_s \
     DATA_DIR=/tmp/data \
     OMP_NUM_THREADS=1
