@@ -54,9 +54,15 @@ def get_tracker(session_id: str) -> AttendanceTracker:
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
+    import gc
+
     global engine, db, attendance_log
-    print("Loading InsightFace (SCRFD + ArcFace)...")
+    print(
+        f"Loading InsightFace model={config.MODEL_NAME} det={config.DET_SIZE}...",
+        flush=True,
+    )
     engine = FaceEngine()
+    gc.collect()
     db = EmployeeDatabase()
     attendance_log = AttendanceLog()
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)

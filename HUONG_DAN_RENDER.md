@@ -100,7 +100,7 @@ https://TEN-APP.onrender.com
 | Lỗi | Cách xử lý |
 |-----|------------|
 | Build Docker fail bước model | Code mới tải model lúc **start** (`start.sh`), push lại Git |
-| Deploy fail / Out of memory | Gói free 512MB — giữ `MODEL_NAME=buffalo_s` |
+| Deploy fail / Out of memory | Code mới: **một lần** load model, `buffalo_s`, `DET_SIZE=256`, model bake trong Docker. Vẫn OOM → nâng plan Render (≥1GB) hoặc dùng PC + LAN |
 | `Not Found` trên `/api/ping` | Chưa deploy code mới — push + Manual Deploy |
 | Tablet không kết nối | Dùng **https://** đầy đủ, không port 8000 |
 | Mất nhân viên sau redeploy | Free không lưu ổ cứng lâu — đăng ký lại trên web cloud |

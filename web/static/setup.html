@@ -4,83 +4,60 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#1e40af" />
-  <title>Cấu hình server | Chấm công</title>
+  <title>Cài đặt server</title>
   <link rel="stylesheet" href="css/style.css" />
-  <style>
-    .setup-wrap {
-      max-width: 520px;
-      margin: 40px auto;
-      padding: 0 20px 40px;
-    }
-    .setup-card {
-      background: var(--surface);
-      border: 1px solid var(--border-light);
-      border-radius: var(--radius-lg);
-      padding: 28px;
-      box-shadow: var(--shadow);
-    }
-    .setup-card h2 {
-      font-size: 1.25rem;
-      margin-bottom: 8px;
-    }
-    .setup-card p {
-      color: var(--text-secondary);
-      font-size: 0.92rem;
-      margin-bottom: 24px;
-      line-height: 1.5;
-    }
-    .hint {
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      margin-top: 8px;
-    }
-    .status-test {
-      margin-top: 16px;
-      padding: 12px;
-      border-radius: var(--radius-sm);
-      font-size: 0.9rem;
-      display: none;
-    }
-    .status-test.ok { display: block; background: var(--success-bg); color: var(--success); }
-    .status-test.err { display: block; background: var(--danger-bg); color: var(--danger); }
-  </style>
+  <link rel="stylesheet" href="css/tablet.css" />
 </head>
-<body class="app-shell">
+<body class="app-shell page-setup">
   <header class="app-header">
     <div class="brand">
       <div class="brand-mark">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+          <circle cx="12" cy="12" r="3"/><path d="M12 2v2M12 20v2"/>
         </svg>
       </div>
       <div class="brand-text">
-        <h1>Cấu hình kết nối</h1>
-        <p>Ứng dụng tablet</p>
+        <h1>Cài đặt</h1>
+        <p>Kết nối server</p>
       </div>
     </div>
+    <nav class="app-nav">
+      <a href="index.html">Chấm công</a>
+      <a href="register.html">Đăng ký</a>
+      <a href="setup.html" class="active">Cài đặt</a>
+    </nav>
   </header>
 
-  <div class="setup-wrap">
-    <div class="setup-card">
-      <h2>Địa chỉ máy chủ</h2>
-      <p>
-        <strong>LAN:</strong> IP PC + port 8000 &nbsp;|&nbsp;
-        <strong>Render:</strong> dán URL <code>https://xxx.onrender.com</code>
+  <div class="setup-page">
+    <div class="mode-tabs" role="tablist">
+      <button type="button" class="mode-tab active" data-mode="lan" id="tabLan">
+        <strong>Mạng LAN</strong>
+        <span>PC chạy python app.py</span>
+      </button>
+      <button type="button" class="mode-tab" data-mode="cloud" id="tabCloud">
+        <strong>Render Cloud</strong>
+        <span>Wi‑Fi bất kỳ</span>
+      </button>
+    </div>
+
+    <div class="setup-card-tablet">
+      <h2 id="setupTitle">Kết nối PC trong mạng</h2>
+      <p id="setupHint" style="color:var(--text-secondary);font-size:0.9rem;margin-bottom:20px;">
+        Nhập IP máy PC (ipconfig). Cùng Wi‑Fi với tablet.
       </p>
 
       <div class="form-group">
-        <label for="serverHost">Địa chỉ server</label>
-        <input id="serverHost" type="text" placeholder="192.168.10.206 hoặc https://xxx.onrender.com" />
-        <p class="hint">PC local: <code>ipconfig</code> → IPv4. Cloud: copy URL từ Render Dashboard.</p>
+        <label for="serverHost" id="hostLabel">Địa chỉ server</label>
+        <input id="serverHost" type="text" placeholder="192.168.10.206" autocomplete="off" />
       </div>
       <div class="form-group" id="portGroup">
-        <label for="serverPort">Port (chỉ dùng cho IP LAN)</label>
-        <input id="serverPort" type="number" value="8000" min="1" max="65535" />
+        <label for="serverPort">Cổng</label>
+        <input id="serverPort" type="number" value="8000" />
       </div>
 
       <div id="testStatus" class="status-test"></div>
 
-      <div class="action-row" style="margin-top: 24px">
+      <div class="action-row" style="margin-top:20px">
         <button id="btnTest" class="btn btn-secondary" type="button">Kiểm tra</button>
         <button id="btnSave" class="btn btn-primary" type="button">Lưu &amp; vào app</button>
       </div>

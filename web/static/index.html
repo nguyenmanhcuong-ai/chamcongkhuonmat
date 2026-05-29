@@ -5,50 +5,48 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#1e40af" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <meta name="description" content="Hệ thống chấm công nhận diện khuôn mặt" />
-  <title>Chấm công | Face Attendance</title>
+  <title>Chấm công khuôn mặt</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
-  <link rel="apple-touch-icon" href="icons/icon-192.svg" />
   <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/tablet.css" />
 </head>
 <body class="app-shell page-checkin">
   <header class="app-header">
     <div class="brand">
       <div class="brand-mark" aria-hidden="true">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="8" r="4"/>
-          <path d="M5 20c0-4 3.5-7 7-7s7 3 7 7"/>
+          <circle cx="12" cy="8" r="4"/><path d="M5 20c0-4 3.5-7 7-7s7 3 7 7"/>
         </svg>
       </div>
       <div class="brand-text">
-        <h1>Hệ thống chấm công</h1>
+        <h1>Chấm công</h1>
         <p>Nhận diện khuôn mặt</p>
       </div>
     </div>
     <div class="header-meta">
+      <span id="serverChip" class="server-chip lan" hidden>Server</span>
       <div class="clock" aria-live="polite">
         <div class="clock-time" id="clockTime">--:--</div>
         <div class="clock-date" id="clockDate">--</div>
       </div>
-      <nav class="app-nav" aria-label="Điều hướng">
+      <nav class="app-nav" aria-label="Menu">
         <a href="index.html" class="active">Chấm công</a>
         <a href="register.html">Đăng ký</a>
-        <a href="setup.html" class="nav-settings" title="Cấu hình server">⚙</a>
+        <a href="setup.html" class="nav-settings" title="Cài đặt">⚙</a>
       </nav>
     </div>
   </header>
 
   <div id="noEmployees" class="alert alert-warn hidden" role="alert">
-    Chưa có nhân viên. Vui lòng <a href="/register">đăng ký khuôn mặt</a> trước.
+    Chưa có nhân viên. <a href="register.html">Đăng ký khuôn mặt</a> trước.
   </div>
 
   <main class="app-main">
     <section class="panel camera-panel">
       <div class="camera-frame">
-        <video id="video" autoplay playsinline muted aria-label="Camera chấm công"></video>
+        <video id="video" autoplay playsinline muted></video>
         <canvas id="overlay" aria-hidden="true"></canvas>
         <div class="face-scan-ring" aria-hidden="true"></div>
         <span class="camera-label">Đưa khuôn mặt vào khung tròn</span>
@@ -59,17 +57,15 @@
         <div class="status-icon-wrap" id="statusIconWrap">
           <span id="statusIcon" aria-hidden="true"></span>
         </div>
-        <h2 class="status-title" id="statusBadge">Sẵn sàng chấm công</h2>
-        <p class="status-desc" id="statusDetail">
-          Nhấn nút bên dưới và nhìn thẳng vào camera. Hoàn tất trong tối đa 3 giây.
-        </p>
+        <h2 class="status-title" id="statusBadge">Sẵn sàng</h2>
+        <p class="status-desc" id="statusDetail">Nhấn nút để bắt đầu — hoàn tất trong 3 giây</p>
         <div id="progressWrap" class="progress-track hidden">
           <div id="progressFill" class="progress-fill"></div>
         </div>
         <div class="action-row">
           <button id="btnStart" class="btn btn-primary" type="button">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            Bắt đầu chấm công
+            <svg viewBox="0 0 24 24" fill="currentColor" width="28" height="28"><path d="M8 5v14l11-7z"/></svg>
+            BẮT ĐẦU CHẤM CÔNG
           </button>
           <button id="btnStop" class="btn btn-secondary hidden" type="button">Dừng</button>
         </div>
@@ -80,7 +76,7 @@
       <div class="panel-head">
         <h2>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3"/><circle cx="12" cy="12" r="9"/></svg>
-          Lịch sử hôm nay
+          Lịch sử chấm công
         </h2>
         <span class="badge-count" id="historyCount">0</span>
       </div>

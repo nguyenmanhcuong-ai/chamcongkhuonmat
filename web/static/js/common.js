@@ -13,6 +13,28 @@ export function setApiBase(url) {
   localStorage.setItem("apiBase", url.replace(/\/$/, ""));
 }
 
+export function updateServerBadge() {
+  const chip = document.getElementById("serverChip");
+  if (!chip) return;
+  const base = getApiBase();
+  if (!base) {
+    chip.hidden = true;
+    return;
+  }
+  const isCloud =
+    base.includes("onrender.com") || base.startsWith("https://");
+  chip.hidden = false;
+  chip.textContent = isCloud ? "Cloud" : "LAN";
+  chip.className = "server-chip " + (isCloud ? "cloud" : "lan");
+}
+
+export function initAppShell() {
+  if (isNativeApp()) {
+    document.body.classList.add("native-app");
+  }
+  updateServerBadge();
+}
+
 export function apiUrl(path) {
   const base = getApiBase();
   const p = path.startsWith("/") ? path : `/${path}`;

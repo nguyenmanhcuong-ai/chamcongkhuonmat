@@ -7,6 +7,7 @@ import {
   showToast,
   apiFetch,
   ensureApiConfigured,
+  initAppShell,
 } from "./common.js";
 
 const video = document.getElementById("video");
@@ -127,6 +128,7 @@ async function resetSamples() {
 }
 
 async function init() {
+  initAppShell();
   if (!(await ensureApiConfigured())) return;
   sessionId = await createSession();
   renderDots();

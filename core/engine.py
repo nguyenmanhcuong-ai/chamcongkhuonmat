@@ -15,8 +15,7 @@ def _onnx_providers() -> tuple[list[str], int, dict]:
     available = set(ort.get_available_providers())
     if config.CTX_ID >= 0 and "CUDAExecutionProvider" in available:
         return ["CUDAExecutionProvider", "CPUExecutionProvider"], config.CTX_ID, {}
-    opts = {"intra_op_num_threads": 4, "inter_op_num_threads": 1}
-    return ["CPUExecutionProvider"], -1, opts
+    return ["CPUExecutionProvider"], -1, dict(config.ONNX_PROVIDER_OPTS)
 
 
 class FaceEngine:

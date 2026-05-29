@@ -1,0 +1,239 @@
+/* Tablet / APK kiosk — bổ sung style.css */
+
+body.native-app .app-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+  border-bottom: none;
+  box-shadow: 0 4px 20px rgba(30, 64, 175, 0.35);
+}
+
+body.native-app .brand-text h1,
+body.native-app .brand-text p,
+body.native-app .clock-time,
+body.native-app .clock-date {
+  color: #fff;
+}
+
+body.native-app .brand-mark {
+  background: rgba(255, 255, 255, 0.2);
+  box-shadow: none;
+}
+
+body.native-app .app-nav {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.native-app .app-nav a {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body.native-app .app-nav a.active {
+  background: #fff;
+  color: var(--primary);
+}
+
+.server-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+body.native-app .server-chip {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.server-chip.cloud::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+}
+
+.server-chip.lan::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fbbf24;
+}
+
+/* Portrait tablet — kiosk chấm công */
+@media (max-width: 900px) {
+  body.page-checkin.native-app .app-main {
+    grid-template-columns: 1fr;
+    padding: 12px;
+    gap: 12px;
+  }
+
+  body.page-checkin.native-app .camera-frame {
+    max-height: min(48dvh, 420px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  }
+
+  body.page-checkin.native-app .camera-panel {
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+
+  body.page-checkin.native-app .status-zone {
+    padding: 20px 16px 24px;
+  }
+
+  body.page-checkin.native-app .status-title {
+    font-size: 1.5rem;
+  }
+
+  body.page-checkin.native-app .btn-primary {
+    min-height: 64px;
+    font-size: 1.15rem;
+    border-radius: 16px;
+    width: 100%;
+    max-width: none;
+  }
+
+  body.page-checkin.native-app .history-panel {
+    max-height: none;
+  }
+
+  body.page-checkin.native-app .face-scan-ring::before {
+    width: min(70%, 320px);
+    border-width: 4px;
+    animation: scan-pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes scan-pulse {
+    0%, 100% { border-color: rgba(96, 165, 250, 0.5); }
+    50% { border-color: rgba(96, 165, 250, 1); }
+  }
+}
+
+/* Setup tablet */
+.setup-page {
+  flex: 1;
+  padding: 16px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.mode-tab {
+  padding: 16px;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: border-color 0.15s, background 0.15s;
+  min-height: 72px;
+}
+
+.mode-tab strong {
+  display: block;
+  font-size: 1rem;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+
+.mode-tab span {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.mode-tab.active {
+  border-color: var(--primary);
+  background: var(--info-bg);
+}
+
+.mode-tab.active strong {
+  color: var(--primary);
+}
+
+.setup-card-tablet {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border-light);
+}
+
+.setup-card-tablet h2 {
+  font-size: 1.2rem;
+  margin-bottom: 8px;
+}
+
+.setup-card-tablet .form-group input {
+  min-height: 56px;
+  font-size: 1.1rem;
+}
+
+.setup-card-tablet .btn {
+  min-height: 56px;
+  flex: 1;
+}
+
+.status-test {
+  margin-top: 16px;
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  display: none;
+}
+
+.status-test.ok {
+  display: block;
+  background: var(--success-bg);
+  color: var(--success);
+}
+
+.status-test.err {
+  display: block;
+  background: var(--danger-bg);
+  color: var(--danger);
+}
+
+body.page-register.native-app .app-header {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 50%, #2563eb 100%);
+}
+
+body.page-register.native-app .brand-text h1,
+body.page-register.native-app .brand-text p,
+body.page-register.native-app .clock-time,
+body.page-register.native-app .clock-date {
+  color: #fff;
+}
+
+body.page-register.native-app .app-nav {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+body.page-register.native-app .app-nav a {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+body.page-register.native-app .app-nav a.active {
+  background: #fff;
+  color: var(--primary);
+}
+
+body.page-register.native-app .btn-primary {
+  min-height: 56px;
+}

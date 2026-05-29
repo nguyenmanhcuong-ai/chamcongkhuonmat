@@ -11,6 +11,7 @@ import {
   setStatusIcon,
   apiFetch,
   ensureApiConfigured,
+  initAppShell,
 } from "./common.js";
 
 const video = document.getElementById("video");
@@ -203,6 +204,7 @@ function escapeHtml(s) {
 }
 
 async function init() {
+  initAppShell();
   if (!(await ensureApiConfigured())) return;
   setStatus({ status: "idle" });
   await loadEmployees();
