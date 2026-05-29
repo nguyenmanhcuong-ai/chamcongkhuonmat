@@ -104,6 +104,8 @@ https://TEN-APP.onrender.com
 | `Not Found` trên `/api/ping` | Chưa deploy code mới — push + Manual Deploy |
 | Tablet không kết nối | Dùng **https://** đầy đủ, không port 8000 |
 | Mất nhân viên sau redeploy | Free không lưu ổ cứng lâu — đăng ký lại trên web cloud |
+| `libxcb.so.1` khi preload model | Push code mới (Dockerfile ép `opencv-python-headless`) rồi redeploy |
+| Cảnh báo GPU `/sys/class/drm/...` | Bình thường trên Render — server chạy CPU, bỏ qua |
 
 ---
 

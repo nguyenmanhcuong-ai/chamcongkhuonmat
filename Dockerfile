@@ -7,13 +7,16 @@ ENV PYTHONUNBUFFERED=1 \
     OMP_NUM_THREADS=1
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libglib2.0-0 libgomp1 \
+    libglib2.0-0 libgomp1 libxcb1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# insightface có thể cài opencv-python (cần X11) — chỉ giữ headless trên server
+RUN pip install --no-cache-dir -r requirements.txt \
+    && pip uninstall -y opencv-python opencv-contrib-python 2>/dev/null || true \
+    && pip install --no-cache-dir --force-reinstall "opencv-python-headless>=4.8.0"
 
 COPY config.py app.py start.sh ./
 COPY core/ ./core/
