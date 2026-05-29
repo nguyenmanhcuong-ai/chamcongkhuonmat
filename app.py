@@ -17,6 +17,7 @@ import cv2
 import numpy as np
 import uvicorn
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
@@ -58,6 +59,7 @@ async def lifespan(_app: FastAPI):
     engine = FaceEngine()
     db = EmployeeDatabase()
     attendance_log = AttendanceLog()
+    config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     n = len(db.list_employees())
     print(f"Ready - {n} employee(s) in database.")
     yield
@@ -66,6 +68,13 @@ async def lifespan(_app: FastAPI):
 
 
 app = FastAPI(title="Chấm công khuôn mặt", lifespan=lifespan)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 # Đường dẫn tương đối cho web + APK (css/style.css, js/...)
 app.mount("/css", StaticFiles(directory=str(STATIC_DIR / "css")), name="css")
@@ -137,6 +146,11 @@ def checkin_frame(payload: FramePayload) -> dict[str, Any]:
 
     result["session_id"] = sid
     return result
+
+
+@app.get("/api/ping")
+def api_ping() -> dict[str, str]:
+    return {"status": "ok", "message": "Server cham cong dang chay"}
 
 
 @app.get("/api/employees")

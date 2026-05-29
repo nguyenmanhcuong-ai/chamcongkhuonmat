@@ -64,17 +64,17 @@
     <div class="setup-card">
       <h2>Địa chỉ máy chủ</h2>
       <p>
-        Tablet cần kết nối tới máy chạy <strong>python app.py</strong>
-        (PC hoặc tablet khác trong cùng Wi‑Fi).
+        <strong>LAN:</strong> IP PC + port 8000 &nbsp;|&nbsp;
+        <strong>Render:</strong> dán URL <code>https://xxx.onrender.com</code>
       </p>
 
       <div class="form-group">
-        <label for="serverHost">IP máy chủ</label>
-        <input id="serverHost" type="text" placeholder="192.168.1.100" inputmode="decimal" />
-        <p class="hint">Trên PC chạy server: gõ <code>ipconfig</code> → IPv4 Address</p>
+        <label for="serverHost">Địa chỉ server</label>
+        <input id="serverHost" type="text" placeholder="192.168.10.206 hoặc https://xxx.onrender.com" />
+        <p class="hint">PC local: <code>ipconfig</code> → IPv4. Cloud: copy URL từ Render Dashboard.</p>
       </div>
-      <div class="form-group">
-        <label for="serverPort">Cổng (port)</label>
+      <div class="form-group" id="portGroup">
+        <label for="serverPort">Port (chỉ dùng cho IP LAN)</label>
         <input id="serverPort" type="number" value="8000" min="1" max="65535" />
       </div>
 
