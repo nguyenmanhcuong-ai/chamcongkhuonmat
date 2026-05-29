@@ -35,10 +35,10 @@ if errorlevel 1 exit /b 1
 
 echo.
 echo Dang build APK...
-powershell -ExecutionPolicy Bypass -File setup-env.ps1
 cd android
 if exist "gradlew.bat" (
-  call gradlew.bat assembleDebug
+  powershell -ExecutionPolicy Bypass -Command ^
+    "$jbr='C:\Program Files\Android\Android Studio\jbr'; if (Test-Path \"$jbr\bin\java.exe\") { $env:JAVA_HOME=$jbr; $env:PATH=\"$jbr\bin;$env:PATH\" }; .\gradlew.bat assembleDebug; exit $LASTEXITCODE"
 ) else (
   echo [LOI] Khong tim thay gradlew. Cai Android Studio va mo project:
   echo   mobile\android

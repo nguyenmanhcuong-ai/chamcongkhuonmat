@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="theme-color" content="#1e40af" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="mobile-web-app-capable" content="yes" />
   <title>Đăng ký nhân viên</title>
   <link rel="manifest" href="manifest.json" />
   <link rel="icon" href="icons/icon-192.svg" type="image/svg+xml" />
@@ -22,52 +20,49 @@
         </svg>
       </div>
       <div class="brand-text">
-        <h1>Đăng ký</h1>
-        <p>Thiết lập khuôn mặt</p>
+        <h1>Đăng ký nhân viên</h1>
       </div>
     </div>
     <div class="header-meta">
-      <div class="clock" aria-live="polite">
-        <div class="clock-time" id="clockTime">--:--</div>
+      <div class="clock clock-header" aria-live="polite">
+        <div class="clock-time" id="clockTime">--:--:--</div>
         <div class="clock-date" id="clockDate">--</div>
       </div>
-      <nav class="app-nav" aria-label="Điều hướng">
+      <nav class="app-nav" aria-label="Menu">
         <a href="index.html">Chấm công</a>
         <a href="register.html" class="active">Đăng ký</a>
-        <a href="setup.html" class="nav-settings" title="Cấu hình server">⚙</a>
+        <a href="setup.html" class="nav-settings" title="IP server">⚙</a>
       </nav>
     </div>
   </header>
 
-  <p class="alert alert-info">
-    Chụp 5–7 góc mặt (thẳng, nghiêng nhẹ) để hệ thống nhận diện chính xác.
-  </p>
-
-  <main class="app-main">
-    <section class="panel camera-panel">
+  <main class="app-main app-main-landscape register-main">
+    <section class="panel camera-panel register-camera">
       <div class="camera-frame">
-        <video id="video" autoplay playsinline muted aria-label="Camera đăng ký"></video>
+        <video id="video" autoplay playsinline muted></video>
         <canvas id="overlay" aria-hidden="true"></canvas>
         <div class="face-scan-ring" aria-hidden="true"></div>
-        <span class="camera-label">Căn mặt trong khung tròn</span>
+        <span class="camera-label">Căn mặt trong khung</span>
       </div>
       <canvas id="captureCanvas" class="hidden" aria-hidden="true"></canvas>
+    </section>
 
+    <section class="panel register-form-panel">
       <div class="panel-body">
-        <div class="form-grid">
+        <div class="form-grid form-grid-landscape">
           <div class="form-group">
-            <label for="employeeId">Mã nhân viên</label>
-            <input id="employeeId" type="text" placeholder="VD: NV001" autocomplete="off" />
+            <label for="employeeId">Mã NV</label>
+            <input id="employeeId" type="text" placeholder="NV001" autocomplete="off" />
           </div>
           <div class="form-group">
-            <label for="employeeName">Họ và tên</label>
-            <input id="employeeName" type="text" placeholder="VD: Nguyễn Văn A" autocomplete="name" />
+            <label for="employeeName">Họ tên</label>
+            <input id="employeeName" type="text" placeholder="Nguyễn Văn A" autocomplete="name" />
           </div>
         </div>
 
         <div class="sample-progress">
           <div class="sample-progress-label">
-            <span>Tiến độ chụp ảnh</span>
+            <span>Ảnh mẫu</span>
             <span id="sampleLabel">0 / 7</span>
           </div>
           <div class="sample-bar">
@@ -76,48 +71,15 @@
           <div id="sampleDots" class="sample-dots"></div>
         </div>
 
-        <p id="statusMsg" class="status-desc" style="margin-bottom: 20px; text-align: left;">
-          Chụp từ 5 đến 7 ảnh khuôn mặt
-        </p>
+        <p id="statusMsg" class="status-desc register-status">Chụp 5–7 ảnh</p>
 
-        <div class="action-row">
-          <button id="btnCapture" class="btn btn-primary" type="button">
-            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="3"/><path d="M12 2a3 3 0 00-3 3v1H6a4 4 0 00-4 4v10a4 4 0 004 4h12a4 4 0 004-4V10a4 4 0 00-4-4h-3V5a3 3 0 00-3-3z"/></svg>
-            Chụp mẫu
-          </button>
-          <button id="btnSave" class="btn btn-success" type="button" disabled>
-            Lưu nhân viên
-          </button>
+        <div class="action-row register-actions">
+          <button id="btnCapture" class="btn btn-primary" type="button">Chụp</button>
+          <button id="btnSave" class="btn btn-success" type="button" disabled>Lưu</button>
           <button id="btnReset" class="btn btn-secondary" type="button">Xóa</button>
         </div>
       </div>
     </section>
-
-    <aside class="panel">
-      <div class="panel-head">
-        <h2>Hướng dẫn</h2>
-      </div>
-      <div class="panel-body">
-        <ol class="guide-list">
-          <li>
-            <span class="guide-num">1</span>
-            <span>Nhập <strong>mã</strong> và <strong>họ tên</strong> nhân viên.</span>
-          </li>
-          <li>
-            <span class="guide-num">2</span>
-            <span>Đưa mặt vào khung tròn trên camera.</span>
-          </li>
-          <li>
-            <span class="guide-num">3</span>
-            <span>Bấm <strong>Chụp mẫu</strong> từ 5 đến 7 lần.</span>
-          </li>
-          <li>
-            <span class="guide-num">4</span>
-            <span>Bấm <strong>Lưu nhân viên</strong>, sau đó quay lại <a href="index.html">Chấm công</a>.</span>
-          </li>
-        </ol>
-      </div>
-    </aside>
   </main>
 
   <div id="toast" class="toast" role="status"></div>

@@ -1,7 +1,11 @@
 /** Shared utilities — tablet / WebView / APK */
 
 export function isNativeApp() {
-  return window.Capacitor?.isNativePlatform?.() === true;
+  if (window.Capacitor?.isNativePlatform?.() === true) return true;
+  // Capacitor WebView (http://localhost hoặc https://localhost)
+  if (location.hostname === "localhost" && !location.port) return true;
+  if (location.protocol === "capacitor:") return true;
+  return false;
 }
 
 export function getApiBase() {
@@ -11,28 +15,6 @@ export function getApiBase() {
 
 export function setApiBase(url) {
   localStorage.setItem("apiBase", url.replace(/\/$/, ""));
-}
-
-export function updateServerBadge() {
-  const chip = document.getElementById("serverChip");
-  if (!chip) return;
-  const base = getApiBase();
-  if (!base) {
-    chip.hidden = true;
-    return;
-  }
-  const isCloud =
-    base.includes("onrender.com") || base.startsWith("https://");
-  chip.hidden = false;
-  chip.textContent = isCloud ? "Cloud" : "LAN";
-  chip.className = "server-chip " + (isCloud ? "cloud" : "lan");
-}
-
-export function initAppShell() {
-  if (isNativeApp()) {
-    document.body.classList.add("native-app");
-  }
-  updateServerBadge();
 }
 
 export function apiUrl(path) {
@@ -45,9 +27,52 @@ export async function apiFetch(path, options) {
   return fetch(apiUrl(path), options);
 }
 
+export function getLanServerLabel() {
+  const base = getApiBase();
+  if (!base) return "";
+  try {
+    const u = new URL(base);
+    return `${u.hostname}:${u.port || "8000"}`;
+  } catch {
+    return base.replace(/^https?:\/\//, "");
+  }
+}
+
+export function isValidLanBase(url) {
+  if (!url) return false;
+  if (url.includes("onrender.com")) return false;
+  return url.startsWith("http://");
+}
+
+export function updateLanBadge() {
+  const el = document.getElementById("lanBadge");
+  if (!el) return;
+  const label = getLanServerLabel();
+  if (label && isValidLanBase(getApiBase())) {
+    el.hidden = false;
+    el.textContent = label;
+    el.title = `Server LAN: ${getApiBase()}`;
+  } else {
+    el.hidden = true;
+  }
+}
+
+export function initAppShell() {
+  if (isNativeApp()) {
+    document.body.classList.add("native-app");
+  }
+  updateLanBadge();
+}
+
 export async function ensureApiConfigured() {
   if (!isNativeApp()) return true;
-  if (!getApiBase()) {
+  const base = getApiBase();
+  if (base && !isValidLanBase(base)) {
+    localStorage.removeItem("apiBase");
+    window.location.replace("setup.html");
+    return false;
+  }
+  if (!base) {
     window.location.replace("setup.html");
     return false;
   }
@@ -75,16 +100,18 @@ export function initClock() {
     timeEl.textContent = now.toLocaleTimeString("vi-VN", {
       hour: "2-digit",
       minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
     });
     dateEl.textContent = now.toLocaleDateString("vi-VN", {
-      weekday: "long",
+      weekday: "short",
       day: "numeric",
-      month: "long",
+      month: "short",
       year: "numeric",
     });
   };
   tick();
-  setInterval(tick, 1000);
+  setInterval(tick, 250);
 }
 
 export function getInitials(name) {
@@ -153,6 +180,31 @@ export async function startCamera(video) {
   return stream;
 }
 
+/** Âm thanh chấm công — file MP3 trong web/static/audio/ */
+const AUDIO_FEEDBACK = {
+  success: "audio/xin_chao.mp3",
+  failure: "audio/xin_lam_lai.mp3",
+};
+
+let _feedbackAudio = null;
+
+/** Phát âm thanh: success → xin_chao.mp3, failure → xin_lam_lai.mp3 */
+export function speakFeedback(kind) {
+  const src = AUDIO_FEEDBACK[kind];
+  if (!src) return;
+  try {
+    if (_feedbackAudio) {
+      _feedbackAudio.pause();
+      _feedbackAudio.currentTime = 0;
+    }
+    _feedbackAudio = new Audio(src);
+    _feedbackAudio.volume = 1;
+    _feedbackAudio.play().catch(() => {});
+  } catch {
+    /* WebView có thể chặn autoplay nếu chưa tương tác */
+  }
+}
+
 export function showToast(el, message, duration = 3500, type = "") {
   el.textContent = message;
   el.className = "toast show" + (type ? ` is-${type}` : "");
@@ -164,10 +216,29 @@ export function showToast(el, message, duration = 3500, type = "") {
 export function formatTime(iso) {
   try {
     const d = new Date(iso);
-    return d.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    });
   } catch {
     return iso;
   }
+}
+
+/** Độ khớp khuôn mặt (0–1), hiển thị 2 chữ số thập phân */
+export function formatScore(score) {
+  if (score == null || score === "" || Number.isNaN(Number(score))) return "—";
+  return Number(score).toFixed(2);
+}
+
+export function scoreClass(score) {
+  const n = Number(score);
+  if (Number.isNaN(n)) return "";
+  if (n >= 0.55) return "";
+  if (n >= 0.45) return "score-mid";
+  return "score-low";
 }
 
 export function formatTimeFull(iso) {

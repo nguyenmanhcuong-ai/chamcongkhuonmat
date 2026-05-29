@@ -7,7 +7,7 @@
 | **APK (tablet)** | Giao diện + camera — kết nối qua Wi‑Fi |
 | **Server (PC)** | `python app.py` — nhận diện khuôn mặt (InsightFace) |
 
-> APK **không** chạy AI trên máy. Cần một máy trong mạng chạy server Python.
+> APK **không** chạy AI trên máy. Chỉ kết nối **mạng LAN (Wi‑Fi)** tới PC chạy `python app.py` — **không** dùng Render/cloud.
 
 ---
 
@@ -53,11 +53,26 @@ Lấy IP PC: `ipconfig` → **IPv4** (vd: `192.168.1.105`)
 
 ---
 
-## Lưu ý
+## Lưu ý kết nối tablet ↔ PC
 
-- Tablet và PC **cùng mạng Wi‑Fi**
-- Tắt firewall chặn port 8000 hoặc cho phép Python
-- Đổi IP server: mở `setup.html` trong app (xóa data app hoặc cài lại) — hoặc thêm nút Cài đặt sau
+- Tablet và PC **cùng mạng LAN** (cùng dải IP, không phải Wi‑Fi khách)
+- PC phải chạy **`python app.py`** trước khi bấm Kiểm tra
+- Nhập IP **không có** `http://` — chỉ số, vd: `192.168.10.206`
+
+### Share file được nhưng `/api/ping` không vào?
+
+Chia sẻ file (SMB) và web (port **8000**) là **hai thứ khác**. Firewall có thể mở file nhưng vẫn chặn port 8000.
+
+| Bước | Việc làm |
+|------|----------|
+| 1 | Trên **PC**: mở `http://192.168.10.206:8000/api/ping` — phải thấy `{"status":"ok",...}` |
+| 2 | Trên **tablet** (Chrome): mở cùng URL — nếu lỗi → mạng/firewall, không phải APK |
+| 3 | PC: chuột phải mạng Ethernet/Wi‑Fi → **Private** (mạng riêng) |
+| 4 | Chạy **`mo-firewall.bat`** (chuột phải → **Run as administrator**) |
+| 5 | Tablet: Cài đặt Wi‑Fi → xem IP tablet. PC `192.168.10.206` thì tablet nên `192.168.8.x`–`192.168.11.x` (cùng /22). Nếu tablet `192.168.1.x` → **khác mạng** |
+| 6 | Tắt VPN; tắt **AP isolation / Wi‑Fi khách** trên router |
+
+Chạy `kiem-tra-mang.bat` trên PC để xem IP và port 8000.
 
 ## Chạy server ngay trên tablet (nâng cao)
 

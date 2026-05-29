@@ -6,12 +6,14 @@ import {
   startCamera,
   showToast,
   formatTime,
-  formatTimeFull,
+  formatScore,
+  scoreClass,
   getInitials,
   setStatusIcon,
   apiFetch,
   ensureApiConfigured,
   initAppShell,
+  speakFeedback,
 } from "./common.js";
 
 const video = document.getElementById("video");
@@ -33,9 +35,17 @@ const noEmployees = document.getElementById("noEmployees");
 
 let sessionId = null;
 let stream = null;
-let loopTimer = null;
+let loopActive = false;
 let sending = false;
 let pauseUntil = 0;
+let lastServerHadFace = false;
+let faceDetector = null;
+let hasFaceDetector = false;
+
+/** ms giữa các lần gọi API khi đang có mặt / đang nhận diện */
+const INTERVAL_TRACKING = 160;
+/** ms khi chưa thấy mặt (chỉ quét nhẹ, không spam server) */
+const INTERVAL_SCAN = 700;
 
 const STATUS = {
   idle: { title: "Sẵn sàng chấm công", icon: "idle", zone: "" },
@@ -46,7 +56,8 @@ const STATUS = {
 };
 
 function applyZoneClass(zoneClass) {
-  statusZone.className = "status-zone" + (zoneClass ? ` ${zoneClass}` : "");
+  statusZone.className =
+    "status-zone status-zone-sidebar" + (zoneClass ? ` ${zoneClass}` : "");
 }
 
 function flashSuccess() {
@@ -55,7 +66,7 @@ function flashSuccess() {
   setTimeout(() => successFlash.classList.remove("show"), 600);
 }
 
-function setStatus(result) {
+function setStatus(result, { silentVoice = false } = {}) {
   const status = result.status || "idle";
   const cfg = STATUS[status] || STATUS.idle;
 
@@ -70,14 +81,18 @@ function setStatus(result) {
     drawBbox(overlay, result.bbox, "#3b82f6");
     btnStart.classList.add("hidden");
     btnStop.classList.remove("hidden");
+    lastServerHadFace = true;
   } else if (status === "matched") {
     progressWrap.classList.add("hidden");
-    statusDetail.textContent = `Xin chào, ${result.name}!`;
+    const sc = result.score != null ? ` · ${formatScore(result.score)}` : "";
+    statusDetail.textContent = `Xin chào, ${result.name}!${sc}`;
     drawBbox(overlay, null);
     showToast(toast, `Chấm công thành công — ${result.name}`, 4000, "success");
     flashSuccess();
+    if (!silentVoice) speakFeedback("success");
     loadAttendance();
     pauseUntil = Date.now() + 2500;
+    lastServerHadFace = false;
     btnStart.classList.remove("hidden");
     btnStop.classList.add("hidden");
     btnStart.disabled = false;
@@ -85,29 +100,61 @@ function setStatus(result) {
     progressWrap.classList.add("hidden");
     statusDetail.textContent = result.message || "Có thể chấm lại sau vài giây";
     drawBbox(overlay, result.bbox, "#d97706");
+    lastServerHadFace = !!result.bbox;
     btnStart.classList.remove("hidden");
     btnStop.classList.add("hidden");
   } else if (status === "unknown") {
     progressWrap.classList.add("hidden");
-    statusDetail.textContent = "Vui lòng thử lại hoặc liên hệ quản trị đăng ký khuôn mặt.";
+    statusDetail.textContent = "Vui lòng thử lại hoặc đăng ký khuôn mặt nếu chưa có.";
     drawBbox(overlay, null);
+    if (!silentVoice) speakFeedback("failure");
     pauseUntil = Date.now() + 1500;
+    lastServerHadFace = false;
     btnStart.classList.remove("hidden");
     btnStop.classList.add("hidden");
     btnStart.disabled = false;
   } else {
     progressWrap.classList.add("hidden");
+    const waiting = loopActive && !lastServerHadFace;
     statusDetail.textContent =
-      result.message || "Nhấn nút bên dưới để bắt đầu chấm công.";
+      result.message ||
+      (waiting ? "Đưa mặt vào khung — hệ thống sẽ tự nhận diện" : "Nhấn bắt đầu chấm công");
     drawBbox(overlay, null);
-    btnStart.classList.remove("hidden");
-    btnStop.classList.add("hidden");
+    lastServerHadFace = false;
+    if (!loopActive) {
+      btnStart.classList.remove("hidden");
+      btnStop.classList.add("hidden");
+    }
   }
 }
 
+async function initFaceDetector() {
+  if (!("FaceDetector" in window)) return;
+  try {
+    faceDetector = new FaceDetector({ maxDetectedFaces: 1, fastMode: true });
+    hasFaceDetector = true;
+  } catch {
+    hasFaceDetector = false;
+  }
+}
+
+/** Phát hiện mặt trên tablet (không gọi server) */
+async function detectLocalFace() {
+  if (!video.videoWidth || video.readyState < 2) return false;
+  if (hasFaceDetector && faceDetector) {
+    try {
+      const faces = await faceDetector.detect(video);
+      return faces.length > 0;
+    } catch {
+      return lastServerHadFace;
+    }
+  }
+  return lastServerHadFace;
+}
+
 async function sendFrame() {
-  if (!sessionId || sending || !video.videoWidth) return;
-  if (Date.now() < pauseUntil) return;
+  if (!sessionId || sending || !video.videoWidth) return null;
+  if (Date.now() < pauseUntil) return null;
 
   sending = true;
   try {
@@ -129,32 +176,98 @@ async function sendFrame() {
       throw new Error(err.detail || "Lỗi server");
     }
 
-    setStatus(await res.json());
+    const data = await res.json();
+    lastServerHadFace =
+      data.status === "collecting" ||
+      data.status === "cooldown" ||
+      (data.status === "idle" && !!data.bbox);
+
+    setStatus(data);
+
+    if (data.status === "matched" || data.status === "unknown") {
+      stopLoop(false);
+    }
+    return data;
   } catch (e) {
     statusDetail.textContent = e.message;
+    return null;
   } finally {
     sending = false;
   }
 }
 
+let nextTickAt = 0;
+let lastProbeAt = 0;
+
+async function tickLoop() {
+  if (!loopActive) return;
+
+  const now = Date.now();
+  if (now < pauseUntil) {
+    setTimeout(tickLoop, 200);
+    return;
+  }
+  if (sending) {
+    setTimeout(tickLoop, 80);
+    return;
+  }
+  if (now < nextTickAt) {
+    setTimeout(tickLoop, 80);
+    return;
+  }
+
+  const localFace = await detectLocalFace();
+  let shouldCallServer = lastServerHadFace;
+
+  if (hasFaceDetector) {
+    shouldCallServer = localFace || lastServerHadFace;
+  } else if (!lastServerHadFace) {
+    shouldCallServer = now - lastProbeAt >= INTERVAL_SCAN;
+    if (shouldCallServer) lastProbeAt = now;
+  }
+
+  if (!shouldCallServer) {
+    setStatus({
+      status: "idle",
+      message: "Đưa mặt vào khung — hệ thống sẽ tự nhận diện",
+    });
+    nextTickAt = now + 200;
+    setTimeout(tickLoop, 150);
+    return;
+  }
+
+  await sendFrame();
+  const delay = lastServerHadFace ? INTERVAL_TRACKING : INTERVAL_SCAN;
+  nextTickAt = Date.now() + delay;
+  setTimeout(tickLoop, 50);
+}
+
 function startLoop() {
-  if (loopTimer) return;
-  loopTimer = setInterval(sendFrame, 80);
+  if (loopActive) return;
+  loopActive = true;
+  lastServerHadFace = false;
+  nextTickAt = 0;
   btnStart.disabled = true;
   btnStart.classList.add("hidden");
   btnStop.classList.remove("hidden");
-  setStatus({ status: "collecting", progress: 0 });
+  setStatus({
+    status: "idle",
+    message: hasFaceDetector
+      ? "Đưa mặt vào khung — phát hiện mặt sẽ tự chạy"
+      : "Đưa mặt vào khung",
+  });
+  tickLoop();
 }
 
-function stopLoop() {
-  if (loopTimer) {
-    clearInterval(loopTimer);
-    loopTimer = null;
-  }
+function stopLoop(resetUi = true) {
+  loopActive = false;
+  lastServerHadFace = false;
   btnStart.disabled = false;
   btnStart.classList.remove("hidden");
   btnStop.classList.add("hidden");
-  setStatus({ status: "idle", message: "Đã dừng" });
+  if (resetUi) {
+    setStatus({ status: "idle", message: "Đã dừng" }, { silentVoice: true });
+  }
 }
 
 async function loadAttendance() {
@@ -178,9 +291,9 @@ async function loadAttendance() {
       <div class="att-avatar" aria-hidden="true">${escapeHtml(getInitials(r.name))}</div>
       <div class="att-info">
         <div class="att-name">${escapeHtml(r.name)}</div>
-        <div class="att-meta">${escapeHtml(r.employee_id)} · ${formatTimeFull(r.time)}</div>
+        <div class="att-meta">${formatTime(r.time)} · ${escapeHtml(r.employee_id || "")}</div>
       </div>
-      <span class="att-time">${formatTime(r.time)}</span>
+      <span class="att-score ${scoreClass(r.score)}" title="Độ khớp">${formatScore(r.score)}</span>
     </li>`
     )
     .join("");
@@ -210,6 +323,7 @@ async function init() {
   await loadEmployees();
   await loadAttendance();
   sessionId = await createSession();
+  await initFaceDetector();
 
   try {
     stream = await startCamera(video);
@@ -221,10 +335,10 @@ async function init() {
   }
 
   btnStart.addEventListener("click", startLoop);
-  btnStop.addEventListener("click", stopLoop);
+  btnStop.addEventListener("click", () => stopLoop(true));
 
   window.addEventListener("beforeunload", () => {
-    stopLoop();
+    stopLoop(false);
     stream?.getTracks().forEach((t) => t.stop());
   });
 }

@@ -1,7 +1,0 @@
-__pycache__/
-.venv/
-data/
-mobile/node_modules/
-mobile/android/
-*.apk
-.git/

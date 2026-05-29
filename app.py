@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 import config
 from core import AttendanceTracker, EmployeeDatabase, FaceEngine
 from core.database import AttendanceLog
+from core.network import get_lan_ips
 
 STATIC_DIR = config.BASE_DIR / "web" / "static"
 
@@ -54,20 +55,24 @@ def get_tracker(session_id: str) -> AttendanceTracker:
 
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
-    import gc
-
     global engine, db, attendance_log
-    print(
-        f"Loading InsightFace model={config.MODEL_NAME} det={config.DET_SIZE}...",
-        flush=True,
-    )
+    print("Loading InsightFace (SCRFD + ArcFace)...")
     engine = FaceEngine()
-    gc.collect()
     db = EmployeeDatabase()
     attendance_log = AttendanceLog()
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     n = len(db.list_employees())
+    port = config.WEB_PORT
     print(f"Ready - {n} employee(s) in database.")
+    print("=" * 55)
+    print("  TABLET / APK nhap mot trong cac dia chi:")
+    for ip in get_lan_ips():
+        print(f"    http://{ip}:{port}")
+    print(f"  PC trinh duyet: http://127.0.0.1:{port}")
+    print("  Kiem tra tablet: http://IP-PC:{0}/api/ping".format(port))
+    print("  Share file duoc nhung tablet khong vao -> mo-firewall.bat (Admin)")
+    print("  Tablet phai cung mang (IP 192.168.8-11.x neu PC la 192.168.10.x)")
+    print("=" * 55)
     yield
     trackers.clear()
     register_buffers.clear()
@@ -86,6 +91,7 @@ app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 app.mount("/css", StaticFiles(directory=str(STATIC_DIR / "css")), name="css")
 app.mount("/js", StaticFiles(directory=str(STATIC_DIR / "js")), name="js")
 app.mount("/icons", StaticFiles(directory=str(STATIC_DIR / "icons")), name="icons")
+app.mount("/audio", StaticFiles(directory=str(STATIC_DIR / "audio")), name="audio")
 
 
 @app.get("/manifest.json")
