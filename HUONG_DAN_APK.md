@@ -62,6 +62,14 @@ Lấy IP PC: `ipconfig` → **IPv4** (vd: `192.168.1.105`)
 - **Firewall Windows:** cho phép Python qua mạng riêng (Private) hoặc mở port 8000
 - Cài **APK mới** sau khi cập nhật (file `ChamCongKhuonMat.apk` mới nhất)
 
+### Chrome tablet cũng timeout?
+
+PC cắm **dây mạng (Ethernet)**, tablet dùng **Wi‑Fi công ty** → thường bị **chặn giữa 2 mạng** (không phải lỗi app).
+
+Chạy **`ket-noi-tablet.bat`** trên PC để xem hướng dẫn chi tiết.
+
+**Cách nhanh:** hotspot điện thoại — tablet vào Wi‑Fi hotspot, PC cắm USB bật **USB tethering**, lấy IP mới (`ipconfig`) rồi thử lại trên tablet.
+
 ## Chạy server ngay trên tablet (nâng cao)
 
 Cần app **Termux** + cài Python + copy project — phức tạp hơn. Khuyến nghị: **1 PC làm server**, nhiều tablet dùng APK.

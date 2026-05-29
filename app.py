@@ -25,6 +25,7 @@ from pydantic import BaseModel, Field
 import config
 from core import AttendanceTracker, EmployeeDatabase, FaceEngine
 from core.database import AttendanceLog
+from core.network import get_lan_ips
 
 STATIC_DIR = config.BASE_DIR / "web" / "static"
 
@@ -61,7 +62,16 @@ async def lifespan(_app: FastAPI):
     attendance_log = AttendanceLog()
     config.DATA_DIR.mkdir(parents=True, exist_ok=True)
     n = len(db.list_employees())
+    port = config.WEB_PORT
     print(f"Ready - {n} employee(s) in database.")
+    print("=" * 55)
+    print("  TABLET / APK nhap mot trong cac dia chi:")
+    for ip in get_lan_ips():
+        print(f"    http://{ip}:{port}")
+    print(f"  PC trinh duyet: http://127.0.0.1:{port}")
+    print("  Kiem tra tablet: http://IP-PC:{0}/api/ping".format(port))
+    print("  Ping duoc ma tablet KHONG vao -> chay mo-firewall.bat (Admin)")
+    print("=" * 55)
     yield
     trackers.clear()
     register_buffers.clear()

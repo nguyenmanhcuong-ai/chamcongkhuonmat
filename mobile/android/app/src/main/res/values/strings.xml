@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Cham Cong Khuon Mat</string>
+    <string name="title_activity_main">Cham Cong Khuon Mat</string>
+    <string name="package_name">vn.chamcong.khuonmat</string>
+    <string name="custom_url_scheme">vn.chamcong.khuonmat</string>
+</resources>
